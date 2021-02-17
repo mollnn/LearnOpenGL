@@ -121,16 +121,15 @@ void render()
 	// **********************************************
 	// 渲染对象
 	GLfloat vertices[] = {
-		0.5f, 0.5f, 0.0f,	// Top Right
-		0.5f, -0.5f, 0.0f,	// Bottom Right
-		-0.5f, -0.5f, 0.0f, // Bottom Left
-		-0.5f, 0.5f, 0.0f	// Top Left
-	};
+		-0.5, 0, 0,
+		-0.25, 0.5, 0,
+		0, 0, 0,
+		0.25, 0.5, 0,
+		0.5, 0, 0};
 	GLuint indices[] = {
 		// Note that we start from 0!
-		0, 1, 3, // First Triangle
-		1, 2, 3	 // Second Triangle
-	};
+		0, 1, 2,
+		2, 3, 4};
 
 	// **********************************************
 	// 顶点数组与缓冲对象的绑定
