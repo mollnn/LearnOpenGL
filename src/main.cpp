@@ -15,6 +15,12 @@ const GLchar *fragmentShaderSource = "#version 330 core\n"
 									 "{\n"
 									 "color = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
 									 "}\n\0";
+const GLchar *fragmentShaderSource2 = "#version 330 core\n"
+									  "out vec4 color;\n"
+									  "void main()\n"
+									  "{\n"
+									  "color = vec4(0.5f, 0.5f, 0.0f, 1.0f);\n"
+									  "}\n\0";
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -76,6 +82,7 @@ void render()
 	// **************************************
 	// Shader 处理
 	// **************************************
+
 	// Vertex shader
 	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
@@ -90,6 +97,7 @@ void render()
 		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n"
 				  << infoLog << std::endl;
 	}
+
 	// Fragment shader
 	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
@@ -102,6 +110,20 @@ void render()
 		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n"
 				  << infoLog << std::endl;
 	}
+
+	// Fragment shader2
+	GLuint fragmentShader2 = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragmentShader2, 1, &fragmentShaderSource2, NULL);
+	glCompileShader(fragmentShader2);
+	// Check for compile time errors
+	glGetShaderiv(fragmentShader2, GL_COMPILE_STATUS, &success);
+	if (!success)
+	{
+		glGetShaderInfoLog(fragmentShader2, 512, NULL, infoLog);
+		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n"
+				  << infoLog << std::endl;
+	}
+
 	// 把它们链接为一个着色器程序对象
 	GLuint shaderProgram = glCreateProgram();
 	glAttachShader(shaderProgram, vertexShader);
@@ -115,8 +137,23 @@ void render()
 		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n"
 				  << infoLog << std::endl;
 	}
+
+	// 把它们链接为一个着色器程序对象
+	GLuint shaderProgram2 = glCreateProgram();
+	glAttachShader(shaderProgram2, vertexShader);
+	glAttachShader(shaderProgram2, fragmentShader2);
+	glLinkProgram(shaderProgram2);
+	// 检测链接着色器程序是否失败
+	glGetProgramiv(shaderProgram2, GL_LINK_STATUS, &success);
+	if (!success)
+	{
+		glGetProgramInfoLog(shaderProgram2, 512, NULL, infoLog);
+		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n"
+				  << infoLog << std::endl;
+	}
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
+	glDeleteShader(fragmentShader2);
 
 	// **********************************************
 	// 渲染对象
@@ -167,6 +204,7 @@ void render()
 	glBindVertexArray(VAO1);							 // 绑定 VA0
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // 绘制
 	glBindVertexArray(0);								 // 解绑 VAO
+	glUseProgram(shaderProgram2);						 // 激活着色器程序
 	glBindVertexArray(VAO2);							 // 绑定 VA0
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // 绘制
 	glBindVertexArray(0);								 // 解绑 VAO
