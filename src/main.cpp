@@ -112,16 +112,14 @@ int main()
 	// 准备顶点数据
 
 	GLfloat vertices[] = {
-		0.5f, 0.5f, 0.0f,	// 右上角
-		0.5f, -0.5f, 0.0f,	// 右下角
-		-0.5f, -0.5f, 0.0f, // 左下角
-		-0.5f, 0.5f, 0.0f	// 左上角
+		// 位置              // 颜色
+		0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,  // 右下
+		-0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, // 左下
+		0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f	  // 顶部
 	};
 
 	GLuint indices[] = {
-		0, 1, 3, // 第一个三角形
-		1, 2, 3	 // 第二个三角形
-	};
+		0, 1, 2};
 
 	GLuint VBO;
 	glGenBuffers(1, &VBO);
@@ -139,8 +137,12 @@ int main()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 	// 设定并启用顶点属性指针
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid *)0);
+	// 位置属性
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid *)0);
 	glEnableVertexAttribArray(0);
+	// 颜色属性
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid *)(3 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(1);
 	// 解绑VAO（不是EBO！）
 	glBindVertexArray(0);
 

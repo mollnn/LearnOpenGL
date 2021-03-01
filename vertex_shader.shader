@@ -1,12 +1,11 @@
 #version 330 core
-layout (location = 0) in vec3 position; // position变量的属性位置值为0
-uniform float rtime;
-out vec4 vertexColor; // 为片段着色器指定一个颜色输出
-out vec4 pos;
+layout (location = 0) in vec3 position; // 位置变量的属性位置值为 0 
+layout (location = 1) in vec3 color;    // 颜色变量的属性位置值为 1
+
+out vec3 ourColor; // 向片段着色器输出一个颜色
 
 void main()
 {
-    gl_Position = vec4(position, 1.0); // 注意我们如何把一个vec3作为vec4的构造器的参数
-    pos = gl_Position;
-    vertexColor = vec4(0.5f + position.x, 0.5f + position.y, rtime, 1.0f); // 把输出变量设置为暗红色
+    gl_Position = vec4(position, 1.0);
+    ourColor = color; // 将ourColor设置为我们从顶点数据那里得到的输入颜色
 }
