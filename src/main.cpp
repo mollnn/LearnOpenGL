@@ -2,19 +2,7 @@
 #include <GLFW/glfw3.h>
 #include <bits/stdc++.h>
 
-// Shaders
-const GLchar *vertexShaderSource = "#version 330 core\n"
-								   "layout (location = 0) in vec3 position;\n"
-								   "void main()\n"
-								   "{\n"
-								   "gl_Position = vec4(position.x, position.y, position.z, 1.0);\n"
-								   "}\0";
-const GLchar *fragmentShaderSource = "#version 330 core\n"
-									 "out vec4 color;\n"
-									 "void main()\n"
-									 "{\n"
-									 "color = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-									 "}\n\0";
+using namespace std;
 
 // settings
 const unsigned int SCR_WIDTH = 512;
@@ -22,6 +10,22 @@ const unsigned int SCR_HEIGHT = 512;
 
 void render();
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
+
+void ReadShaderSource(std::string filename, GLchar *p_GLchar)
+{
+	std::ifstream t;
+	int length;
+	t.open(filename);							   // open input file
+	t.seekg(0, std::ios::end);					   // go to the end
+	length = t.tellg();							   // report location (this is the length)
+	t.seekg(0, std::ios::beg);					   // go back to the beginning
+	t.read(static_cast<char *>(p_GLchar), length); // read the whole file into the buffer
+	t.close();									   // close file handle
+
+	cout << "read succ!" << endl;
+	cout << p_GLchar << endl;
+	cout << endl;
+}
 
 int main()
 {
@@ -49,21 +53,61 @@ int main()
 
 	// 渲染准备工作
 	// 准备着色器
+
+	GLchar *shader_src = new GLchar[4096];
+	fill(shader_src, shader_src + 4096, 0);
+
+	ReadShaderSource("vertex_shader.shader", shader_src);
+
 	GLuint vertexShader;
 	vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+
+	glShaderSource(vertexShader, 1, &shader_src, NULL);
 	glCompileShader(vertexShader);
+
+	GLint success;
+	GLchar infoLog[512];
+	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+	if (!success)
+	{
+		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n"
+				  << infoLog << std::endl;
+	}
+
+	fill(shader_src, shader_src + 4096, 0);
+	ReadShaderSource("fragment_shader.shader", shader_src);
 
 	GLuint fragmentShader;
 	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+	glShaderSource(fragmentShader, 1, &shader_src, NULL);
 	glCompileShader(fragmentShader);
+
+	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+	if (!success)
+	{
+		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
+		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n"
+				  << infoLog << std::endl;
+	}
 
 	GLuint shaderProgram;
 	shaderProgram = glCreateProgram();
 	glAttachShader(shaderProgram, vertexShader);
 	glAttachShader(shaderProgram, fragmentShader);
 	glLinkProgram(shaderProgram);
+
+	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+	if (!success)
+	{
+		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n"
+				  << infoLog << std::endl;
+	}
+	glDeleteShader(vertexShader);
+	glDeleteShader(fragmentShader);
+
+	delete[] shader_src;
 
 	// 准备顶点数据
 
