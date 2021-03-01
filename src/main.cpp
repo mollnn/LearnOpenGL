@@ -1,7 +1,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <bits/stdc++.h>
-
+#include "shader.hpp"
 using namespace std;
 
 // settings
@@ -54,60 +54,7 @@ int main()
 	// 渲染准备工作
 	// 准备着色器
 
-	GLchar *shader_src = new GLchar[4096];
-	fill(shader_src, shader_src + 4096, 0);
-
-	ReadShaderSource("vertex_shader.shader", shader_src);
-
-	GLuint vertexShader;
-	vertexShader = glCreateShader(GL_VERTEX_SHADER);
-
-	glShaderSource(vertexShader, 1, &shader_src, NULL);
-	glCompileShader(vertexShader);
-
-	GLint success;
-	GLchar infoLog[512];
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n"
-				  << infoLog << std::endl;
-	}
-
-	fill(shader_src, shader_src + 4096, 0);
-	ReadShaderSource("fragment_shader.shader", shader_src);
-
-	GLuint fragmentShader;
-	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &shader_src, NULL);
-	glCompileShader(fragmentShader);
-
-	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n"
-				  << infoLog << std::endl;
-	}
-
-	GLuint shaderProgram;
-	shaderProgram = glCreateProgram();
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glLinkProgram(shaderProgram);
-
-	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-	if (!success)
-	{
-		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n"
-				  << infoLog << std::endl;
-	}
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
-
-	delete[] shader_src;
+	Shader shader("vertex_shader.shader", "fragment_shader.shader");
 
 	// 准备顶点数据
 
@@ -150,14 +97,13 @@ int main()
 	while (!glfwWindowShouldClose(window))
 	{
 		// 渲染过程开始
-		glUseProgram(shaderProgram);
 
-		GLfloat timeValue = fmod(glfwGetTime(), 2.0f);
-		if (timeValue > 1.0f)
-			timeValue = 2.0f - timeValue;
-		GLint vertexColorLocation = glGetUniformLocation(shaderProgram, "rtime");
-		glUseProgram(shaderProgram);
-		glUniform1f(vertexColorLocation, timeValue);
+		shader.Use();
+		// GLfloat timeValue = fmod(glfwGetTime(), 2.0f);
+		// if (timeValue > 1.0f)
+		// timeValue = 2.0f - timeValue;
+		// GLint vertexColorLocation = glGetUniformLocation(shader.Program, "rtime");
+		// glUniform1f(vertexColorLocation, timeValue);
 
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
