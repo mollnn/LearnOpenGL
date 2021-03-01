@@ -66,29 +66,55 @@ int main()
 
 	// 准备顶点数据
 
-	GLfloat vertices[] = {
+	GLfloat vertices1[] = {
 		-0.5, -0.5, 0,
 		-0.5, 0.5, 0,
+		0, 0, 0};
+
+	GLfloat vertices2[] = {
 		0, 0, 0,
 		0.5, -0.5, 0,
 		0.5, 0.5, 0};
 
 	GLuint indices[] = {
-		0, 1, 2,
-		2, 3, 4};
+		0, 1, 2};
 
-	GLuint VBO;
-	glGenBuffers(1, &VBO);
-	GLuint VAO;
-	glGenVertexArrays(1, &VAO);
 	GLuint EBO;
 	glGenBuffers(1, &EBO);
 
+	// 处理第一个
+
+	GLuint VBO1;
+	glGenBuffers(1, &VBO1);
+	GLuint VAO1;
+	glGenVertexArrays(1, &VAO1);
+
 	// 绑定顶点数组对象
-	glBindVertexArray(VAO);
+	glBindVertexArray(VAO1);
 	// 把我们的顶点数组复制到一个顶点缓冲中，供OpenGL使用
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO1);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices1), vertices1, GL_STATIC_DRAW);
+	// 复制我们的索引数组到一个索引缓冲中，供OpenGL使用
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	// 设定并启用顶点属性指针
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid *)0);
+	glEnableVertexAttribArray(0);
+	// 解绑VAO（不是EBO！）
+	glBindVertexArray(0);
+
+	// 处理第二个
+
+	GLuint VBO2;
+	glGenBuffers(1, &VBO2);
+	GLuint VAO2;
+	glGenVertexArrays(1, &VAO2);
+
+	// 绑定顶点数组对象
+	glBindVertexArray(VAO2);
+	// 把我们的顶点数组复制到一个顶点缓冲中，供OpenGL使用
+	glBindBuffer(GL_ARRAY_BUFFER, VBO2);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices2), vertices2, GL_STATIC_DRAW);
 	// 复制我们的索引数组到一个索引缓冲中，供OpenGL使用
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
@@ -103,8 +129,13 @@ int main()
 	{
 		// 渲染过程开始
 		glUseProgram(shaderProgram);
-		glBindVertexArray(VAO);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		// 绘制第一个
+		glBindVertexArray(VAO1);
+		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
+		glBindVertexArray(0);
+		// 绘制第二个
+		glBindVertexArray(VAO2);
+		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
 		// 渲染过程结束
 		glfwSwapBuffers(window);
