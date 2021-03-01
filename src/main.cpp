@@ -5,37 +5,32 @@
 // Shaders
 const GLchar *vertexShaderSource = "#version 330 core\n"
 								   "layout (location = 0) in vec3 position;\n"
-								   "layout (location = 1) in vec3 color;\n"
-								   "out vec3 ourColor;\n"
 								   "void main()\n"
 								   "{\n"
-								   "gl_Position = vec4(position, 1.0);\n"
-								   "ourColor = color;\n"
+								   "gl_Position = vec4(position.x, position.y, position.z, 1.0);\n"
 								   "}\0";
 const GLchar *fragmentShaderSource = "#version 330 core\n"
 									 "out vec4 color;\n"
-									 "uniform vec4 ourColor;\n"
 									 "void main()\n"
 									 "{\n"
-									 "color = ourColor;\n"
+									 "color = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
 									 "}\n\0";
 
 // settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+const unsigned int SCR_WIDTH = 512;
+const unsigned int SCR_HEIGHT = 512;
 
 void render();
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
 
 int main()
 {
-	// glfw: initialize and configure
+	// 窗口初始化
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	// glfw window creation
 	GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
 	if (window == NULL)
 	{
@@ -44,117 +39,82 @@ int main()
 		return -1;
 	}
 	glfwMakeContextCurrent(window);
-
 	glfwSetKeyCallback(window, key_callback);
 
-	// glad: load all OpenGL function pointers
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
 		std::cout << "Failed to initialize GLAD" << std::endl;
 		return -1;
 	}
 
-	// render loop
+	// 渲染准备工作
+	// 准备着色器
+	GLuint vertexShader;
+	vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+	glCompileShader(vertexShader);
+
+	GLuint fragmentShader;
+	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+	glCompileShader(fragmentShader);
+
+	GLuint shaderProgram;
+	shaderProgram = glCreateProgram();
+	glAttachShader(shaderProgram, vertexShader);
+	glAttachShader(shaderProgram, fragmentShader);
+	glLinkProgram(shaderProgram);
+
+	// 准备顶点数据
+
+	GLfloat vertices[] = {
+		0.5f, 0.5f, 0.0f,	// 右上角
+		0.5f, -0.5f, 0.0f,	// 右下角
+		-0.5f, -0.5f, 0.0f, // 左下角
+		-0.5f, 0.5f, 0.0f	// 左上角
+	};
+
+	GLuint indices[] = {
+		0, 1, 3, // 第一个三角形
+		1, 2, 3	 // 第二个三角形
+	};
+
+	GLuint VBO;
+	glGenBuffers(1, &VBO);
+	GLuint VAO;
+	glGenVertexArrays(1, &VAO);
+	GLuint EBO;
+	glGenBuffers(1, &EBO);
+
+	// 绑定顶点数组对象
+	glBindVertexArray(VAO);
+	// 把我们的顶点数组复制到一个顶点缓冲中，供OpenGL使用
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	// 复制我们的索引数组到一个索引缓冲中，供OpenGL使用
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	// 设定并启用顶点属性指针
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid *)0);
+	glEnableVertexAttribArray(0);
+	// 解绑VAO（不是EBO！）
+	glBindVertexArray(0);
+
+	// 程序循环
 	while (!glfwWindowShouldClose(window))
 	{
-		glfwPollEvents();
-
-		// render process here
-		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
-
-		render();
-
-		// glfw: swap buffers and poll IO events (keyspressed/released, mouse moved etc.)
+		// 渲染过程开始
+		glUseProgram(shaderProgram);
+		glBindVertexArray(VAO);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glBindVertexArray(0);
+		// 渲染过程结束
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
 
-	// glfw: terminate, clearing all previously allocated GLFWresources.
 	glfwTerminate();
 	return 0;
-}
-
-void render()
-{
-	// Build and compile our shader program
-	// Vertex shader
-	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-	glCompileShader(vertexShader);
-	// Check for compile time errors
-	GLint success;
-	GLchar infoLog[512];
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n"
-				  << infoLog << std::endl;
-	}
-	// Fragment shader
-	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-	glCompileShader(fragmentShader);
-	// Check for compile time errors
-	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n"
-				  << infoLog << std::endl;
-	}
-	// Link shaders
-	GLuint shaderProgram = glCreateProgram();
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glLinkProgram(shaderProgram);
-	// Check for linking errors
-	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-	if (!success)
-	{
-		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n"
-				  << infoLog << std::endl;
-	}
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
-
-	// Set up vertex data (and buffer(s)) and attribute pointers
-	GLfloat vertices[] = {
-		// Positions
-		0.5f, -0.5f, 0.0f,	// Bottom Right
-		-0.5f, -0.5f, 0.0f, // Bottom Left
-		0.0f, 0.5f, 0.0f	// Top
-	};
-	GLuint VBO, VAO;
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
-	// Bind the Vertex Array Object first, then bind and set vertex buffer(s) and attribute pointer(s).
-	glBindVertexArray(VAO);
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-	// Position attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid *)0);
-	glEnableVertexAttribArray(0);
-
-	glBindVertexArray(0); // Unbind VAO
-
-	// Be sure to activate the shader
-	glUseProgram(shaderProgram);
-
-	// Update the uniform color
-	GLfloat timeValue = glfwGetTime();
-	GLfloat greenValue = (sin(timeValue * 4) / 2) + 0.5;
-	GLint vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
-	glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
-
-	// Draw the triangle
-	glBindVertexArray(VAO);
-	glDrawArrays(GL_TRIANGLES, 0, 3);
-	glBindVertexArray(0);
 }
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode)
