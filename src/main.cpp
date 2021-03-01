@@ -149,6 +149,14 @@ int main()
 	{
 		// 渲染过程开始
 		glUseProgram(shaderProgram);
+
+		GLfloat timeValue = fmod(glfwGetTime(), 2.0f);
+		if (timeValue > 1.0f)
+			timeValue = 2.0f - timeValue;
+		GLint vertexColorLocation = glGetUniformLocation(shaderProgram, "rtime");
+		glUseProgram(shaderProgram);
+		glUniform1f(vertexColorLocation, timeValue);
+
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
