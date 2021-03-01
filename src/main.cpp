@@ -9,12 +9,18 @@ const GLchar *vertexShaderSource = "#version 330 core\n"
 								   "{\n"
 								   "gl_Position = vec4(position.x, position.y, position.z, 1.0);\n"
 								   "}\0";
-const GLchar *fragmentShaderSource = "#version 330 core\n"
-									 "out vec4 color;\n"
-									 "void main()\n"
-									 "{\n"
-									 "color = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-									 "}\n\0";
+const GLchar *fragmentShaderSource1 = "#version 330 core\n"
+									  "out vec4 color;\n"
+									  "void main()\n"
+									  "{\n"
+									  "color = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+									  "}\n\0";
+const GLchar *fragmentShaderSource2 = "#version 330 core\n"
+									  "out vec4 color;\n"
+									  "void main()\n"
+									  "{\n"
+									  "color = vec4(0.5f, 1.0f, 0.2f, 1.0f);\n"
+									  "}\n\0";
 
 // settings
 const unsigned int SCR_WIDTH = 512;
@@ -53,16 +59,24 @@ int main()
 	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
 	glCompileShader(vertexShader);
 
-	GLuint fragmentShader;
-	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-	glCompileShader(fragmentShader);
+	GLuint fragmentShader[2];
+	GLuint shaderProgram[2];
 
-	GLuint shaderProgram;
-	shaderProgram = glCreateProgram();
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glLinkProgram(shaderProgram);
+	shaderProgram[0] = glCreateProgram();
+	fragmentShader[0] = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragmentShader[0], 1, &fragmentShaderSource1, NULL);
+	glCompileShader(fragmentShader[0]);
+	glAttachShader(shaderProgram[0], vertexShader);
+	glAttachShader(shaderProgram[0], fragmentShader[0]);
+	glLinkProgram(shaderProgram[0]);
+
+	shaderProgram[1] = glCreateProgram();
+	fragmentShader[1] = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragmentShader[1], 1, &fragmentShaderSource2, NULL);
+	glCompileShader(fragmentShader[1]);
+	glAttachShader(shaderProgram[1], vertexShader);
+	glAttachShader(shaderProgram[1], fragmentShader[1]);
+	glLinkProgram(shaderProgram[1]);
 
 	// 准备顶点数据
 
@@ -128,12 +142,13 @@ int main()
 	while (!glfwWindowShouldClose(window))
 	{
 		// 渲染过程开始
-		glUseProgram(shaderProgram);
 		// 绘制第一个
+		glUseProgram(shaderProgram[0]);
 		glBindVertexArray(VAO1);
 		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
 		// 绘制第二个
+		glUseProgram(shaderProgram[1]);
 		glBindVertexArray(VAO2);
 		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
