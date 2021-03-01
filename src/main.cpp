@@ -20,7 +20,6 @@ const GLchar *fragmentShaderSource = "#version 330 core\n"
 const unsigned int SCR_WIDTH = 512;
 const unsigned int SCR_HEIGHT = 512;
 
-void render();
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
 
 int main()
@@ -68,16 +67,15 @@ int main()
 	// 准备顶点数据
 
 	GLfloat vertices[] = {
-		0.5f, 0.5f, 0.0f,	// 右上角
-		0.5f, -0.5f, 0.0f,	// 右下角
-		-0.5f, -0.5f, 0.0f, // 左下角
-		-0.5f, 0.5f, 0.0f	// 左上角
-	};
+		-0.5, -0.5, 0,
+		-0.5, 0.5, 0,
+		0, 0, 0,
+		0.5, -0.5, 0,
+		0.5, 0.5, 0};
 
 	GLuint indices[] = {
-		0, 1, 3, // 第一个三角形
-		1, 2, 3	 // 第二个三角形
-	};
+		0, 1, 2,
+		2, 3, 4};
 
 	GLuint VBO;
 	glGenBuffers(1, &VBO);
