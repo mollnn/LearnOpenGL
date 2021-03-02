@@ -10,8 +10,8 @@ using namespace std;
 #include "stb_image.h"
 
 // settings
-const unsigned int SCR_WIDTH = 512;
-const unsigned int SCR_HEIGHT = 512;
+const unsigned int SCR_WIDTH = 1024;
+const unsigned int SCR_HEIGHT = 1024;
 
 void render();
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
@@ -134,7 +134,7 @@ int main()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	// Load, create texture and generate mipmaps
 
-	image = stbi_load("texture2.png", &width, &height, &nrChannels, 0);
+	image = stbi_load("texture2.jpg", &width, &height, &nrChannels, 0);
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 	glGenerateMipmap(GL_TEXTURE_2D);
