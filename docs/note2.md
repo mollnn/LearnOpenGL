@@ -1,5 +1,7 @@
 ## OpenGL: 着色器
 
+*注：摘自 LearnOpenGL-CN*
+
 典型着色器结构
 
 ``` cpp
@@ -112,4 +114,58 @@ glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
 通过glUniform4f函数设置uniform值
 
 注意：查询uniform地址不要求你之前使用过着色器程序，但是更新一个uniform之前你**必须**先使用程序
+
+### 顶点形式的颜色数据
+
+把颜色数据加进顶点数据中。我们将把颜色数据添加为3个float值至vertices数组
+
+``` cpp
+GLfloat vertices[] = {
+    // 位置              // 颜色
+     0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   // 右下
+    -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,   // 左下
+     0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f    // 顶部
+};
+```
+
+调整一下顶点着色器，用`layout`标识符来把color属性的位置值设置为1（现在可以看明白 layout 是干什么的了）
+
+``` cpp
+#version 330 core
+layout (location = 0) in vec3 position; // 位置变量的属性位置值为 0 
+layout (location = 1) in vec3 color;    // 颜色变量的属性位置值为 1
+
+out vec3 ourColor; // 向片段着色器输出一个颜色
+
+void main()
+{
+    gl_Position = vec4(position, 1.0);
+    ourColor = color; // 将ourColor设置为我们从顶点数据那里得到的输入颜色
+}
+```
+
+重新配置顶点属性指针
+
+``` cpp
+// 位置属性
+glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
+glEnableVertexAttribArray(0);
+// 颜色属性
+glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3* sizeof(GLfloat)));
+glEnableVertexAttribArray(1);
+```
+
+回忆一下glVertexAttribPointer函数的参数
+
+第一个参数指定我们要配置的顶点属性（这对应着在顶点着色器中使用`layout(location = 0)`定义了position顶点属性的位置值）
+
+第二个参数指定顶点属性的大小
+
+第三个参数指定数据的类型
+
+第四个参数定义我们是否希望数据被标准化(Normalize)。如果我们设置为GL_TRUE，所有数据都会被映射到0（对于有符号型signed数据是-1）到1之间
+
+第五个参数叫做步长(Stride)，它告诉我们在连续的顶点属性组之间的间隔
+
+最后一个参数表示位置数据在缓冲中起始位置的偏移量(Offset)，类型是`GLvoid*`，所以需要我们进行强制类型转换
 
